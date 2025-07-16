@@ -1,0 +1,22 @@
+# Prediction Service Configuration
+cassandra:
+  hosts: ["cassandra"]
+  port: 9042
+  keyspace: "coinbase"
+
+model:
+  config_path: "/app/model/configs/train_config.yaml"
+  checkpoint_path: "/app/model/checkpoints/best_epoch_16.pt"
+  name: "lstm_model_v1"
+  version: "1.0"
+  device: "cpu"  # Change to "cuda" if GPU available
+
+prediction:
+  product_ids: ["BTC-USD", "ETH-USD", "XRP-USD"]
+  interval_seconds: 300  # 5 minutes
+  use_confidence_intervals: false
+  
+service:
+  enable_health_check: true
+  health_check_port: 8000
+  log_level: "INFO"

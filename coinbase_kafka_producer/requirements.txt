@@ -1,0 +1,5 @@
+# Producer library
+kafka-python == 2.2.6
+websocket-client == 1.8.0
+coinbase-advanced-py == 1.8.2
+# Model library

@@ -1,0 +1,544 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": {
+        "type": "hadesarchitect-cassandra-datasource",
+        "uid": "Yc87Z6OJ4wsv"
+      },
+      "description": "Real-time Bitcoin price with predictions",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Price (USD)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Actual Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Predicted Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "alias": "Actual Price",
+          "columnId": "product_id",
+          "columnTime": "start_time",
+          "columnValue": "close",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 1,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "A",
+          "table": "candles",
+          "valueId": "BTC-USD"
+        },
+        {
+          "alias": "Predicted Price",
+          "columnId": "product_id",
+          "columnTime": "target_time",
+          "columnValue": "predicted_price",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 19,
+          "filtering": true,
+          "instant": false,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "B",
+          "table": "predictions",
+          "valueId": "BTC-USD"
+        }
+      ],
+      "title": "Bitcoin (BTC-USD) - Actual vs Predicted",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "hadesarchitect-cassandra-datasource",
+        "uid": "Yc87Z6OJ4wsv"
+      },
+      "description": "Real-time Ethereum price with predictions",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Price (USD)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Actual Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Predicted Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "alias": "Actual Price",
+          "columnId": "product_id",
+          "columnTime": "start_time",
+          "columnValue": "close",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 1,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "A",
+          "table": "candles",
+          "valueId": "ETH-USD"
+        },
+        {
+          "alias": "Predicted Price",
+          "columnId": "product_id",
+          "columnTime": "target_time",
+          "columnValue": "predicted_price",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 19,
+          "filtering": true,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "B",
+          "table": "predictions",
+          "valueId": "ETH-USD"
+        }
+      ],
+      "title": "Ethereum (ETH-USD) - Actual vs Predicted",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "hadesarchitect-cassandra-datasource",
+        "uid": "Yc87Z6OJ4wsv"
+      },
+      "description": "Real-time XRP price with predictions",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Price (USD)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Actual Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Predicted Price"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "alias": "Actual Price",
+          "columnId": "product_id",
+          "columnTime": "start_time",
+          "columnValue": "close",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 1,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "A",
+          "table": "candles",
+          "valueId": "XRP-USD"
+        },
+        {
+          "alias": "Predicted Price",
+          "columnId": "product_id",
+          "columnTime": "target_time",
+          "columnValue": "predicted_price",
+          "datasource": {
+            "type": "hadesarchitect-cassandra-datasource",
+            "uid": "Yc87Z6OJ4wsv"
+          },
+          "datasourceId": 19,
+          "filtering": true,
+          "keyspace": "coinbase",
+          "queryType": "query",
+          "refId": "B",
+          "table": "predictions",
+          "valueId": "XRP-USD"
+        }
+      ],
+      "title": "XRP (XRP-USD) - Actual vs Predicted",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": [
+    "crypto",
+    "predictions",
+    "ml"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now/d",
+    "to": "now/d"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Crypto Price Predictions Dashboard",
+  "uid": "crypto-predictions",
+  "version": 10
+}

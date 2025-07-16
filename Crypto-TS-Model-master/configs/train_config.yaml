@@ -1,0 +1,77 @@
+# model:
+#   # === Input/Output ===
+#   enc_in: 13                  # Number of input features (e.g., closing price, volume, etc.)
+#   c_out: 1                    # Number of output features (typically 1 for price prediction)
+#   seq_len: 288                # Input sequence length (e.g., 288 time steps ≈ 1 day with 5-minute data)
+#   pred_len: 12                # Prediction length (e.g., 12 steps ≈ 1 hour with 5-minute data)
+#   model_type: "lstm_attention" # Model architecture type
+
+#   # === Embedding ===
+#   patch_size: 16              # Patch size for embedding (if used)
+#   volatility_lookback: 11     # Lookback window for volatility calculation
+  
+#   # === LSTM Architecture ===
+#   d_model: 256                # Hidden state dimension
+#   e_layers: 3                 # Number of LSTM layers
+#   dropout: 0.2                # Dropout rate
+  
+#   # === Attention ===
+#   n_heads: 8                  # Number of attention heads
+#   d_ff: 512                   # Hidden layer size in predictor
+  
+#   # === Time Features ===
+#   time_features: 0            # Number of time features (0 if not used)
+
+# data:
+#   path: "/kaggle/input/btcusdt-5m-full/BTCUSDT_5m_full.csv" # Path to data file
+#   freq: "5T"                  # Data frequency (5 minutes in this case)
+#   train_ratio: 0.8            # Train/validation split ratio (80% train, 20% validation)
+
+# training:
+#   epochs: 30                  # Maximum number of epochs
+#   batch_size: 128             # Batch size
+#   lr: 0.001                   # Learning rate
+#   patience: 20                # Patience for early stopping
+#   min_delta: 0.001            # Minimum improvement threshold for early stopping
+#   log_dir: "logs"             # Directory for logs
+#   checkpoint_dir: "checkpoints" # Directory for model checkpoints
+#   device: "cuda"              # Computing device (cuda/cpu)
+#   clip_grad: 1.0              # Gradient clipping value to prevent exploding gradients
+#   weight_decay: 0.0001        # L2 regularization weight
+#   resume: "auto"              # Automatically resume from checkpoint if available
+
+data:
+  path: "/kaggle/working/BNB_OHLC_5m.csv"
+  freq: "5T"                # Data resolution 5 phút
+  train_ratio: 1.0        
+
+model:
+  model_type: "lstm"    # "lstm", "lstm_attention", "optimize"
+  enc_in: 26                # Số features 
+  d_model: 128               # Giảm từ 128 -> 96 
+  e_layers: 1               # Số LSTM layers
+  n_heads: 4                # Số attention heads
+  seq_len: 288              # 24h = 288*5phút (tăng context window)
+  pred_len: 36              # 3h = 36*5phút
+  dropout: 0.5              # Tăng dropout để chống overfit
+  output_dim: 1
+
+training:
+  epochs: 100               
+  batch_size: 128           
+  lr: 0.0001                
+  device: "cuda"
+  log_dir: "logs"
+  checkpoint_dir: "checkpoints"
+  checkpoint_interval: 10
+  resume: "auto"
+  patience: 50             
+  min_delta: 0.0005
+  loss_fn: "mse"
+  use_amp: True
+  grad_accum_steps: 1       
+  ema_decay: 0.996
+  use_swa: True
+  swa_lr: 0.01
+  swa_start_ratio: 0.5
+  warmup_epochs: 5   

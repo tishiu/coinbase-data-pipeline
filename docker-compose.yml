@@ -1,0 +1,315 @@
+version: '3.8'
+
+services:
+  # Kafka configuration
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft mode
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      
+      # Listeners configuration
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      
+      # Cluster configuration
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      
+      # Thư mục dữ liệu
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      
+      # Chế độ clustering
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - ie212_pipeline
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:29092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Kafka setup: automatic creation topic coin-data
+  kafka-init:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+        echo 'Chờ Kafka khởi động...'
+        sleep 5
+        echo 'Tạo topic coin-data...'
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic coin-data --partitions 3 --replication-factor 1
+        echo 'Topic coin-data đã được tạo.'
+        echo 'Tạo topic coin-model-data...'
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic coin-model-data --partitions 3 --replication-factor 1
+        echo 'Topic coin-model đã được tạo.'
+      "
+    networks:
+      - ie212_pipeline
+
+  # UI để quản lý Kafka
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ie212_pipeline
+
+  # Cassandra setup database
+  # cassandra:
+  #   image: cassandra:latest
+  #   container_name: cassandra
+  #   ports:
+  #     - "9042:9042"
+  #   environment:
+  #     - CASSANDRA_CLUSTER_NAME=coinbase_cluster
+  #     - CASSANDRA_KEYSPACE=coinbase
+  #   volumes:
+  #     - cassandra-data:/var/lib/cassandra
+  #   networks:
+  #     - ie212_pipeline
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "nodetool status | grep -q '^UN'"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+
+  # Cassandra setup database
+  cassandra:
+    build:
+      context: ./cassandra
+      dockerfile: ./cassandra.Dockerfile
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=coinbase_cluster
+      - CASSANDRA_KEYSPACE=coinbase
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    networks:
+      - ie212_pipeline
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status | grep -q '^UN'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Cassandra setup - tạo keyspace và table
+  # cassandra-setup:
+  #   image: cassandra:latest
+  #   container_name: cassandra-setup
+  #   depends_on:
+  #     cassandra:
+  #       condition: service_healthy
+  #   command: >
+  #     bash -c "
+  #       echo 'Waiting for Cassandra to be ready...'
+  #       sleep 10
+  #       echo 'creating keyspace...'
+  #       cqlsh cassandra -e \"CREATE KEYSPACE IF NOT EXISTS coinbase WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};\"
+  #       echo 'creating prices table...'
+  #       cqlsh cassandra -e \"CREATE TABLE IF NOT EXISTS coinbase.prices (product_id TEXT, time TIMESTAMP, price DOUBLE, PRIMARY KEY (product_id, time));\"
+  #       echo 'prices table created!'
+  #       echo 'creating candles table...'
+  #       cqlsh cassandra -e \"CREATE TABLE IF NOT EXISTS coinbase.candles ( product_id TEXT, start_time TIMESTAMP, end_time TIMESTAMP,open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume DOUBLE, candle_size TEXT, channel TEXT, PRIMARY KEY (product_id, start_time));\"
+  #       echo 'candles table created!'
+  #       echo 'cassandra setup complete!'
+  #       echo "Creating prediction table in Cassandra..."
+  #       cqlsh cassandra -e "CREATE TABLE IF NOT EXISTS coinbase.predictions (product_id TEXT, model_name TEXT, prediction_time TIMESTAMP, target_time TIMESTAMP, predicted_price DOUBLE, PRIMARY KEY ((product_id, model_name), prediction_time, target_time));\"
+  #       echo "Prediction table created!"
+  #       echo 'Cassandra setup complete!'
+  #     "
+  #   networks:
+  #     - ie212_pipeline
+
+  # S3 compatible storage (MinIO)
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - ie212_pipeline
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MinIO setup
+  minio-setup:
+    image: minio/mc
+    container_name: minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        sleep 5;
+        /usr/bin/mc config host add minio http://minio:9000 minioadmin minioadmin;
+        /usr/bin/mc mb --ignore-existing minio/ie212-coinbase-data;
+        exit 0;
+      "
+    networks:
+      - ie212_pipeline
+
+  # Python Producer
+  coinbase-producer:
+    build:
+      context: .
+      dockerfile: ./coinbase_kafka_producer/producer.Dockerfile
+    container_name: coinbase-producer
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - ie212_pipeline
+    restart: unless-stopped
+
+  # Go Consumer
+  coinbase-consumer:
+    build:
+      context: .
+      dockerfile: ./go_kafka_consumer/consumer.Dockerfile
+    container_name: coinbase-consumer
+    depends_on:
+      - kafka
+      - minio
+      - kafka-init
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      AWS_ENDPOINT: http://minio:9000 # Uncomment if using MinIO
+      AWS_REGION: ap-southeast-1 # ap-southeast-1 if using MinIO
+      AWS_ACCESS_KEY_ID: minioadmin  # minioadmin if using MinIO
+      AWS_SECRET_ACCESS_KEY: minioadmin # minioadmin if using MinIO
+      AWS_S3_FORCE_PATH_STYLE: "true" # Uncomment if using MinIO
+      # AWS_S3_BUCKET: ${S3_BUCKET} # Comment this line if using MinIO
+    networks:
+      - ie212_pipeline
+    restart: unless-stopped
+
+  # Spark Processor
+  spark-processor:
+    build:
+      context: .
+      dockerfile: ./kafka_spark_processor/processor.Dockerfile
+    container_name: spark-processor
+    depends_on:
+      - kafka
+      - cassandra
+    environment:
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_PORT: 9042
+    networks:
+      - ie212_pipeline
+    restart: unless-stopped
+    
+  # Prediction service
+  price-predictor:
+    build:
+      context: .
+      dockerfile: ./prediction_service/prediction.Dockerfile
+    container_name: price-predictor
+    environment:
+      - CASSANDRA_HOSTS=cassandra
+      - CASSANDRA_PORT=9042
+      - CASSANDRA_KEYSPACE=coinbase
+      - PRODUCT_IDS=BTC-USD,ETH-USD,XRP-USD
+      - PREDICTION_INTERVAL=300
+      - MODEL_CONFIG_PATH=/app/model/configs/train_config.yaml
+      - MODEL_CHECKPOINT_PATH=/app/model/checkpoints/best_epoch_16.pt
+      - MODEL_NAME=lstm_model_v1
+      - MODEL_VERSION=1.0
+      - DEVICE=cpu
+      - ENABLE_HEALTH_CHECK=true
+      - MODEL_TYPE=lstm
+    ports:
+      - "8000:8000"  # Health check port
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    networks:
+      - ie212_pipeline
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - prediction-logs:/app/logs
+      - ./Crypto-TS-Model-master:/app/model:ro  # Mount model files as read-only
+
+  # Grafana for visualization
+  grafana:
+    build:
+      context: ./grafana
+      dockerfile: ./grafana.Dockerfile
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/config:/etc/grafana/config
+      - ./grafana/dashboards:/etc/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_LOG_LEVEL=debug
+    networks:
+      - ie212_pipeline
+    depends_on:
+      - cassandra
+    restart: unless-stopped
+
+volumes:
+  kafka-data:
+  cassandra-data:
+  minio-data:
+  grafana-data:
+  prediction-logs:
+
+networks:
+  ie212_pipeline:
+    driver: bridge 
