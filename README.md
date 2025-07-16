@@ -22,10 +22,10 @@
 | Trực quan hóa          | Grafana                                    |
 | Quản lý dịch vụ        | Docker Compose                             |
 
-## 🏗️ Kiến trúc hệ thống (Kappa Architecture)
+##  Kiến trúc hệ thống (Kappa Architecture)
 <img width="735" height="228" alt="image" src="https://github.com/user-attachments/assets/c88e6673-c469-4671-bcbb-c45c33097dc6" />
 
-## 🔧 Hướng dẫn chạy hệ thống
+##  Hướng dẫn chạy hệ thống
 
 ### Yêu cầu
 - Docker + Docker Compose
