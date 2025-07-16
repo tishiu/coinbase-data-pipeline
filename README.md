@@ -1,16 +1,16 @@
 
 # Hệ thống truy xuất và dự đoán dữ liệu tài chính theo thời gian thực từ Coinbase
 
-## 📌 Giới thiệu
+##  Giới thiệu
 Đồ án này xây dựng một hệ thống thu thập, xử lý và dự đoán giá tiền điện tử theo thời gian thực từ sàn **Coinbase**, sử dụng **kiến trúc Kappa**. Hệ thống hỗ trợ nhà đầu tư ra quyết định nhanh chóng và chính xác trong môi trường thị trường có độ biến động cao.
 
-## 🎯 Mục tiêu
+##  Mục tiêu
 - Truy xuất và xử lý dữ liệu tiền điện tử thời gian thực.
 - Dự đoán giá ngắn hạn (3 giờ tới) sử dụng LSTM, CNN-LSTM và CNN-LSTM-Attention.
 - Lưu trữ dữ liệu hiệu quả với độ trễ thấp.
 - Trực quan hóa dữ liệu và dự đoán bằng Grafana.
 
-## 🧠 Công nghệ sử dụng
+##  Công nghệ sử dụng
 
 | Thành phần             | Công nghệ / Công cụ                        |
 |------------------------|--------------------------------------------|
@@ -39,8 +39,8 @@
 
 ```bash
 # Clone repo
-git clone https://github.com/your-username/realtime-crypto-pipeline.git
-cd realtime-crypto-pipeline
+git clone https://github.com/tishiu/coinbase-data-pipeline.git
+cd coinbase-data-pipeline
 
 # Khởi chạy 
 docker-compose up --build
